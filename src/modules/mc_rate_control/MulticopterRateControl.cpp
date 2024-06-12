@@ -38,19 +38,19 @@
 #include <mathlib/math/Limits.hpp>
 #include <mathlib/math/Functions.hpp>
 #include <px4_platform_common/events.h>
-#include <uORB/topics/input_rc.h>
-#include <poll.h>
+// #include <uORB/topics/input_rc.h>
+// #include <poll.h>
 
 using namespace matrix;
 using namespace time_literals;
 using math::radians;
 
-int input_rc_sub_fd = orb_subscribe(ORB_ID(input_rc));
+// int input_rc_sub_fd = orb_subscribe(ORB_ID(input_rc));
 
-/* one could wait for multiple topics with this technique, just using one here */
-px4_pollfd_struct_t fds[] = {
-    	{ .fd = input_rc_sub_fd,   .events = POLLIN },
-};
+// /* one could wait for multiple topics with this technique, just using one here */
+// px4_pollfd_struct_t fds[] = {
+//     	{ .fd = input_rc_sub_fd,   .events = POLLIN },
+// };
 
 MulticopterRateControl::MulticopterRateControl(bool vtol) :
 	ModuleParams(nullptr),
@@ -116,21 +116,6 @@ MulticopterRateControl::parameters_updated()
 void
 MulticopterRateControl::Run()
 {
-	/* wait for sensor update of 1 file descriptor for 1000 ms (1 second) */
-	// int poll_ret = px4_poll(fds, 1, 1000);
-	// PX4_INFO("%d", poll_ret);
-
-	if (fds[0].revents & POLLIN) {
-		/* obtained data for the first file descriptor */
-		struct input_rc_s raw;
-		/* copy input raw data into local buffer */
-		orb_copy(ORB_ID(input_rc), input_rc_sub_fd, &raw);
-		PX4_INFO("RC:\t%d\t%d\t%d",
-					raw.values[0],
-					raw.values[1],
-					raw.values[2]);
-	}
-
 
 	if (should_exit()) {
 		_vehicle_angular_velocity_sub.unregisterCallback();

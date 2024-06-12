@@ -1,0 +1,5 @@
+menuconfig MODULES_ARM_COMPENSATOR
+	bool "arm_compensator"
+	default y
+	---help---
+		Enable support for ArmCompensator

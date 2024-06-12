@@ -14,7 +14,7 @@ control_allocator start
 # Start Multicopter Rate Controller.
 #
 mc_rate_control start
-
+arm_compensator start
 #
 # Start Multicopter Attitude Controller.
 #

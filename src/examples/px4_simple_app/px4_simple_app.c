@@ -51,6 +51,7 @@
 #include <uORB/uORB.h>
 #include <uORB/topics/vehicle_acceleration.h>
 #include <uORB/topics/vehicle_attitude.h>
+#include <uORB/topics/input_rc.h>
 
 __EXPORT int px4_simple_app_main(int argc, char *argv[]);
 
@@ -60,11 +61,14 @@ int px4_simple_app_main(int argc, char *argv[])
 
 	/* subscribe to vehicle_acceleration topic */
 	int sensor_sub_fd = orb_subscribe(ORB_ID(vehicle_acceleration));
+	int input_sub_fd = orb_subscribe(ORB_ID(input_rc));
 	/* limit the update rate to 5 Hz */
 	orb_set_interval(sensor_sub_fd, 200);
+	orb_set_interval(input_sub_fd, 200);
 
 	/* advertise attitude topic */
 	struct vehicle_attitude_s att;
+	
 	memset(&att, 0, sizeof(att));
 	orb_advert_t att_pub = orb_advertise(ORB_ID(vehicle_attitude), &att);
 
@@ -74,6 +78,7 @@ int px4_simple_app_main(int argc, char *argv[])
 		/* there could be more file descriptors here, in the form like:
 		 * { .fd = other_sub_fd,   .events = POLLIN },
 		 */
+		{ .fd = input_sub_fd,   .events = POLLIN },
 	};
 
 	int error_counter = 0;
@@ -101,12 +106,20 @@ int px4_simple_app_main(int argc, char *argv[])
 			if (fds[0].revents & POLLIN) {
 				/* obtained data for the first file descriptor */
 				struct vehicle_acceleration_s accel;
+				struct input_rc_s input;
+				
 				/* copy sensors raw data into local buffer */
 				orb_copy(ORB_ID(vehicle_acceleration), sensor_sub_fd, &accel);
+				orb_copy(ORB_ID(input_rc), input_sub_fd, &input);
 				PX4_INFO("Accelerometer:\t%8.4f\t%8.4f\t%8.4f",
 					 (double)accel.xyz[0],
 					 (double)accel.xyz[1],
 					 (double)accel.xyz[2]);
+
+				PX4_INFO("Input:\t%d\t%d\t%d",
+					 input.values[0],
+					 input.values[1],
+					 input.values[2]);
 
 				/* set att and publish this information for other apps
 				 the following does not have any meaning, it's just an example
