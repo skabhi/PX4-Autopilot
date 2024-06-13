@@ -54,6 +54,7 @@
 #include <uORB/topics/manual_control_setpoint.h>
 #include <uORB/topics/vehicle_thrust_setpoint.h>
 #include <uORB/topics/vehicle_torque_setpoint.h>
+#include <uORB/topics/robotic_arm_moments.h>
 
 using namespace time_literals;
 
@@ -81,6 +82,8 @@ private:
 
 	void update_comp_moments();
 
+	void publish_arm_moments();
+
 	// Publications
 	uORB::Publication<orb_test_s> _orb_test_pub{ORB_ID(orb_test)};
 
@@ -98,6 +101,7 @@ private:
 
 	uORB::Publication<vehicle_torque_setpoint_s>	_vehicle_torque_setpoint_pub;
 	uORB::Publication<vehicle_thrust_setpoint_s>	_vehicle_thrust_setpoint_pub;
+	uORB::Publication<robotic_arm_moments_s>	_robotic_arm_moments_pub;
 
 
 	float _battery_status_scale{0.0f};
@@ -113,16 +117,19 @@ private:
 
 	// Parameters
 	DEFINE_PARAMETERS(
-		(ParamInt<px4::params::SYS_AUTOSTART>) 		_param_sys_autostart,   /**< example parameter */
-		(ParamInt<px4::params::SYS_AUTOCONFIG>) 	_param_sys_autoconfig,  /**< another parameter */
-		(ParamBool<px4::params::MC_BAT_SCALE_EN>) 	_param_mc_bat_scale_en,
-		(ParamBool<px4::params::ARM_COMP_ENABLE>) 	_param_arm_comp_enable,
-		(ParamFloat<px4::params::ARM_COMP_M1>) 		_param_arm_comp_m1,
-		(ParamFloat<px4::params::ARM_COMP_M2>) 		_param_arm_comp_m2,
-		(ParamFloat<px4::params::ARM_COMP_L1>) 		_param_arm_comp_l1,
-		(ParamFloat<px4::params::ARM_COMP_L2>) 		_param_arm_comp_l2,
-		(ParamFloat<px4::params::ARM_COMP_MB>) 		_param_arm_comp_mb,
-		(ParamFloat<px4::params::ARM_COMP_G>) 		_param_arm_comp_g
+		(ParamInt<px4::params::SYS_AUTOSTART>) 			_param_sys_autostart,   /**< example parameter */
+		(ParamInt<px4::params::SYS_AUTOCONFIG>) 		_param_sys_autoconfig,  /**< another parameter */
+		(ParamBool<px4::params::MC_BAT_SCALE_EN>) 		_param_mc_bat_scale_en,
+		(ParamBool<px4::params::ARM_COMP_ENABLE>) 		_param_arm_comp_enable,
+		(ParamFloat<px4::params::ARM_COMP_M1>) 			_param_arm_comp_m1,
+		(ParamFloat<px4::params::ARM_COMP_M2>) 			_param_arm_comp_m2,
+		(ParamFloat<px4::params::ARM_COMP_L1>) 			_param_arm_comp_l1,
+		(ParamFloat<px4::params::ARM_COMP_L2>) 			_param_arm_comp_l2,
+		(ParamFloat<px4::params::ARM_COMP_MB>) 			_param_arm_comp_mb,
+		(ParamFloat<px4::params::ARM_COMP_G>) 			_param_arm_comp_g,
+		(ParamFloat<px4::params::ARM_COMP_FACTOR>) 		_param_arm_comp_factor,
+		(ParamInt<px4::params::ARM_COMP_FLIP_MX>) 		_param_arm_comp_flip_mx,
+		(ParamInt<px4::params::ARM_COMP_FLIP_MY>) 		_param_arm_comp_flip_my
 	)
 
 

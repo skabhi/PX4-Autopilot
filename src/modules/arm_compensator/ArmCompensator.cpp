@@ -37,8 +37,8 @@ ArmCompensator::ArmCompensator(bool vtol) :
 	ModuleParams(nullptr),
 	ScheduledWorkItem(MODULE_NAME, px4::wq_configurations::rate_ctrl),
 	_vehicle_torque_setpoint_pub(vtol ? ORB_ID(vehicle_torque_setpoint_virtual_mc) : ORB_ID(vehicle_torque_setpoint)),
-	_vehicle_thrust_setpoint_pub(vtol ? ORB_ID(vehicle_thrust_setpoint_virtual_mc) : ORB_ID(vehicle_thrust_setpoint))
-
+	_vehicle_thrust_setpoint_pub(vtol ? ORB_ID(vehicle_thrust_setpoint_virtual_mc) : ORB_ID(vehicle_thrust_setpoint)),
+	_robotic_arm_moments_pub(vtol ? ORB_ID(robotic_arm_moments_virtual_mc) : ORB_ID(robotic_arm_moments))
 {
 }
 
@@ -83,15 +83,15 @@ bool ArmCompensator::init()
 
 void ArmCompensator::update_comp_moments()
 {
-	float l1_sin_theta1 = (_l1 * sin(_theta1));
-	float l1_cos_theta1 = (_l1 * cos(_theta1));
+	float l1_sin_theta1 = (_l1 * sinf(_theta1));
+	float l1_cos_theta1 = (_l1 * cosf(_theta1));
 	float theta12 = _theta1 + _theta2;
 
 	_Mx = _m1 * _param_arm_comp_g.get() * l1_sin_theta1 + _m2 * _param_arm_comp_g.get()
-		 * (l1_sin_theta1 + _l2 * sin(theta12));
+		 * (l1_sin_theta1 + _l2 * sinf(theta12));
 
 	_My = _param_arm_comp_g.get() * (_mb * _lb - _m1 * l1_cos_theta1
-		- _m2 * (l1_cos_theta1 + _l2 * cos(theta12)));
+		- _m2 * (l1_cos_theta1 + _l2 * cosf(theta12)));
 }
 
 
@@ -197,7 +197,7 @@ void ArmCompensator::Run()
 			// vehicle_torque_setpoint.xyz[1] = PX4_ISFINITE(att_control(1)) ? att_control(1) : 0.f;
 			// vehicle_torque_setpoint.xyz[2] = PX4_ISFINITE(att_control(2)) ? att_control(2) : 0.f;
 
-			vehicle_torque_setpoint.xyz[0] = 1.1f;
+			vehicle_torque_setpoint.xyz[0] = 0.f;
 			vehicle_torque_setpoint.xyz[1] = 0.f;
 			vehicle_torque_setpoint.xyz[2] = 0.f;
 
@@ -233,17 +233,25 @@ void ArmCompensator::Run()
 	// PX4_INFO("Mx= %f", (double) _Mx);
 	// PX4_INFO("My= %f", (double) _My);
 
-	// Example
-	//  publish some data
-	orb_test_s data{};
-	data.val = 314159;
-	data.timestamp = hrt_absolute_time();
-	_orb_test_pub.publish(data);
-	// PX4_INFO("hello");
+	publish_arm_moments();
 
 
 	perf_end(_loop_perf);
 }
+
+
+
+void ArmCompensator::publish_arm_moments()
+{
+	robotic_arm_moments_s moments{};
+
+	moments.xyz[0] = (_Mx/_param_arm_comp_factor.get()) * _param_arm_comp_enable.get();
+	moments.xyz[1] = (_My/_param_arm_comp_factor.get()) * _param_arm_comp_enable.get();
+	moments.xyz[2] = 0.f;
+	moments.timestamp = hrt_absolute_time();
+	_robotic_arm_moments_pub.publish(moments);
+}
+
 
 int ArmCompensator::task_spawn(int argc, char *argv[])
 {

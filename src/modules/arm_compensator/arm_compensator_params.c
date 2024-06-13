@@ -105,9 +105,40 @@ PARAM_DEFINE_FLOAT(ARM_COMP_MB, 1200.0f);
 
 
 /**
+ * Moment divider
+ *
+ * @min 0.01
+ * @max 100000
+ * @decimal 3
+ * @increment 0.01
+ * @group Multicopter Rate Control
+ */
+PARAM_DEFINE_FLOAT(ARM_COMP_FACTOR, 10.0f);
+
+
+/**
+ * Reverse the compensated roll moment
+ *
+ * @min -1
+ * @max 1
+ * @group Multicopter Rate Control
+ */
+PARAM_DEFINE_INT32(ARM_COMP_FLIP_MX, 1);
+
+/**
+ * Reverse the compensated pitch moment
+ *
+ * @min -1
+ * @max 1
+ * @group Multicopter Rate Control
+ */
+PARAM_DEFINE_INT32(ARM_COMP_FLIP_MY, 1);
+
+
+/**
  * Enable robotic arm moment compensation
  *
  * @boolean
  * @group Multicopter Rate Control
  */
-PARAM_DEFINE_INT32(ARM_COMP_ENABLE, 1);
+PARAM_DEFINE_INT32(ARM_COMP_ENABLE, 0);

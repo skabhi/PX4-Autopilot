@@ -202,6 +202,18 @@ MulticopterRateControl::Run()
 
 
 
+		if (_robotic_arm_moments_sub.updated()) {
+		robotic_arm_moments_s moments;
+
+		if (_robotic_arm_moments_sub.copy(&moments)) {
+
+			_Mx = moments.xyz[0];
+			_My = moments.xyz[1];
+		}
+	}
+
+
+
 		// run the rate controller
 		if (_vehicle_control_mode.flag_control_rates_enabled) {
 
@@ -246,9 +258,11 @@ MulticopterRateControl::Run()
 			vehicle_torque_setpoint_s vehicle_torque_setpoint{};
 
 			_thrust_setpoint.copyTo(vehicle_thrust_setpoint.xyz);
-			vehicle_torque_setpoint.xyz[0] = PX4_ISFINITE(att_control(0)) ? att_control(0) : 0.f;
-			vehicle_torque_setpoint.xyz[1] = PX4_ISFINITE(att_control(1)) ? att_control(1) : 0.f;
+			vehicle_torque_setpoint.xyz[0] = PX4_ISFINITE(att_control(0)) ? (att_control(0) + _Mx) : 0.f;
+			vehicle_torque_setpoint.xyz[1] = PX4_ISFINITE(att_control(1)) ? (att_control(1) + _My) : 0.f;
 			vehicle_torque_setpoint.xyz[2] = PX4_ISFINITE(att_control(2)) ? att_control(2) : 0.f;
+
+			// PX4_INFO("roll: %f,  pitch: %f", (double) att_control(0), (double) att_control(1));
 
 			// scale setpoints by battery status if enabled
 			if (_param_mc_bat_scale_en.get()) {
