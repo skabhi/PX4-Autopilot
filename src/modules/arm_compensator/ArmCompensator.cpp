@@ -57,43 +57,37 @@ bool ArmCompensator::init()
 	// }
 
 	// alternatively, Run on fixed interval
-	ScheduleOnInterval(2500_us); // 2000 us interval, 200 Hz rate
+	ScheduleOnInterval(2000_us); // 2000 us interval, 200 Hz rate
 	// ScheduleNow();
 
-	_m1 = _param_arm_comp_m1.get()/1000;
-	_m2 = _param_arm_comp_m2.get()/1000;
-	_l1 = _param_arm_comp_l1.get()/1000;
-	_l2 = _param_arm_comp_l2.get()/1000;
-	_mb = _param_arm_comp_mb.get()/1000;
+	parameters_updated();
 
-	_lb = (_param_arm_comp_m1.get() * _param_arm_comp_l1.get() + _param_arm_comp_m2.get() *
-			(_param_arm_comp_l1.get() + _param_arm_comp_l2.get()))/_param_arm_comp_mb.get();
-	_lb = _lb/1000;
+	int i = 100;
+	while (i > 0)
+	{
+		PX4_INFO("lb: %f", (double) _lb);
+		i--;
+	}
 
-	// int i = 100;
-	// while (i > 0)
-	// {
-	// 	PX4_INFO("lb: %f", (double) _lb);
-	// 	i--;
-	// }
+	// run_diagnostics();
 
 	return true;
 }
 
 
-void ArmCompensator::update_comp_moments()
+void ArmCompensator::parameters_updated()
 {
-	float l1_sin_theta1 = (_l1 * sinf(_theta1));
-	float l1_cos_theta1 = (_l1 * cosf(_theta1));
-	float theta12 = _theta1 + _theta2;
+	// Reinitialize parameters after updating
+        _m1 = _param_arm_comp_m1.get() / 1000;
+        _m2 = _param_arm_comp_m2.get() / 1000;
+        _l1 = _param_arm_comp_l1.get() / 1000;
+        _l2 = _param_arm_comp_l2.get() / 1000;
+        _mb = _param_arm_comp_mb.get() / 1000;
 
-	_Mx = _m1 * _param_arm_comp_g.get() * l1_sin_theta1 + _m2 * _param_arm_comp_g.get()
-		 * (l1_sin_theta1 + _l2 * sinf(theta12));
-
-	_My = _param_arm_comp_g.get() * (_mb * _lb - _m1 * l1_cos_theta1
-		- _m2 * (l1_cos_theta1 + _l2 * cosf(theta12)));
+        _lb = (_param_arm_comp_m1.get() * _param_arm_comp_l1.get() + _param_arm_comp_m2.get() *
+               (_param_arm_comp_l1.get() + _param_arm_comp_l2.get())) / _param_arm_comp_mb.get();
+        _lb = _lb / 1000;
 }
-
 
 
 void ArmCompensator::Run()
@@ -114,121 +108,14 @@ void ArmCompensator::Run()
 		parameter_update_s param_update;
 		_parameter_update_sub.copy(&param_update);
 		updateParams(); // update module parameters (in DEFINE_PARAMETERS)
-	}
-
-	// Example
-	//  update vehicle_status to check arming state
-	if (_vehicle_status_sub.updated()) {
-		vehicle_status_s vehicle_status;
-
-		if (_vehicle_status_sub.copy(&vehicle_status)) {
-
-			const bool armed = (vehicle_status.arming_state == vehicle_status_s::ARMING_STATE_ARMED);
-
-			if (armed && !_armed) {
-				PX4_WARN("vehicle armed due to %d", vehicle_status.latest_arming_reason);
-
-			} else if (!armed && _armed) {
-				PX4_INFO("vehicle disarmed due to %d", vehicle_status.latest_disarming_reason);
-			}
-
-			_armed = armed;
-		}
+		parameters_updated();
 	}
 
 
+	update_rc_inputs_and_thetas();
 
-	// Example
-	//  grab latest accelerometer data
-	if (_vehicle_torque_setpoint_sub.updated()) {
-		vehicle_torque_setpoint_s tau;
-
-		if (_vehicle_torque_setpoint_sub.copy(&tau)) {
-			// DO WORK
-			// PX4_INFO("hello");
-
-			// access parameter value (SYS_AUTOSTART)
-			if (_param_sys_autostart.get() == 1234) {
-				// do something if SYS_AUTOSTART is 1234
-			}
-		}
-	}
-
-
-	// Example
-	//  grab latest accelerometer data
-	if (_vehicle_thrust_setpoint_sub.updated()) {
-		vehicle_thrust_setpoint_s thrust;
-
-		if (_vehicle_thrust_setpoint_sub.copy(&thrust)) {
-			// DO WORK
-
-			// access parameter value (SYS_AUTOSTART)
-			if (_param_sys_autostart.get() == 1234) {
-				// do something if SYS_AUTOSTART is 1234
-			}
-		}
-	}
-
-	// Example
-	//  grab latest accelerometer data
-	if (_input_rc_sub.updated()) {
-		input_rc_s input;
-
-		if (_input_rc_sub.copy(&input)) {
-			// DO WORK
-			// PX4_INFO("RC: %d", input.values[0]);
-
-			// access parameter value (SYS_AUTOSTART)
-			if (_param_sys_autostart.get() == 1234) {
-				// do something if SYS_AUTOSTART is 1234
-			}
-		}
-	}
-
-	// PX4_INFO("RC input updated: %s", _input_rc_sub.updated() ? "true" : "false");
-
-	// publish thrust and torque setpoints
-			// vehicle_thrust_setpoint_s vehicle_thrust_setpoint{};
-			vehicle_torque_setpoint_s vehicle_torque_setpoint{};
-
-			// _thrust_setpoint.copyTo(vehicle_thrust_setpoint.xyz);
-			// vehicle_torque_setpoint.xyz[0] = PX4_ISFINITE(att_control(0)) ? att_control(0) : 0.f;
-			// vehicle_torque_setpoint.xyz[1] = PX4_ISFINITE(att_control(1)) ? att_control(1) : 0.f;
-			// vehicle_torque_setpoint.xyz[2] = PX4_ISFINITE(att_control(2)) ? att_control(2) : 0.f;
-
-			vehicle_torque_setpoint.xyz[0] = 0.f;
-			vehicle_torque_setpoint.xyz[1] = 0.f;
-			vehicle_torque_setpoint.xyz[2] = 0.f;
-
-
-
-			// scale setpoints by battery status if enabled
-			if (_param_mc_bat_scale_en.get()) {
-				if (_battery_status_sub.updated()) {
-					battery_status_s battery_status;
-
-					if (_battery_status_sub.copy(&battery_status) && battery_status.connected && battery_status.scale > 0.f) {
-						_battery_status_scale = battery_status.scale;
-					}
-				}
-
-				if (_battery_status_scale > 0.f) {
-					for (int i = 0; i < 3; i++) {
-						// vehicle_thrust_setpoint.xyz[i] = math::constrain(vehicle_thrust_setpoint.xyz[i] * _battery_status_scale, -1.f, 1.f);
-						vehicle_torque_setpoint.xyz[i] = math::constrain(vehicle_torque_setpoint.xyz[i] * _battery_status_scale, -1.f, 1.f);
-					}
-				}
-			}
-
-
-			// vehicle_torque_setpoint.timestamp_sample = angular_velocity.timestamp_sample;
-			vehicle_torque_setpoint.timestamp = hrt_absolute_time();
-			_vehicle_torque_setpoint_pub.publish(vehicle_torque_setpoint);
-
-
-	_theta1 = M_PI/6;
-	_theta2 = M_PI/6;
+	// _theta1 = M_PI/6;
+	// _theta2 = M_PI/6;
 	update_comp_moments();
 	// PX4_INFO("Mx= %f", (double) _Mx);
 	// PX4_INFO("My= %f", (double) _My);
@@ -240,17 +127,102 @@ void ArmCompensator::Run()
 }
 
 
+void ArmCompensator::update_rc_inputs_and_thetas()
+{
+	if (_input_rc_sub.updated()) {
+		input_rc_s input;
+
+		if (_input_rc_sub.copy(&input)) {
+
+			_input_rc_theta1 = input.values[_param_arm_comp_ch_theta1.get()];
+			_input_rc_theta2 = input.values[_param_arm_comp_ch_theta2.get()];
+
+			// PX4_INFO("RC: %d", input.values[_param_arm_comp_ch_theta1.get()]);
+		}
+	}
+
+
+	const float theta_min = -M_PI / 6;
+	const float theta_max = M_PI / 6;
+
+	_theta1 = mapValue(_input_rc_theta1, 1000, 2000, theta_min, theta_max);
+	_theta2 = mapValue(_input_rc_theta2, 1000, 2000, theta_min, theta_max);
+
+	// Print mapped values for debugging
+	// PX4_INFO("Mapped _theta1: %f", (double) math::degrees(_theta1));
+	// PX4_INFO("Mapped _theta2: %f", (double) math::degrees(_theta2));
+
+}
+
+float ArmCompensator::mapValue(int x, int in_min, int in_max, float out_min, float out_max)
+{
+    return (float(x - in_min) * (out_max - out_min) / (in_max - in_min)) + out_min;
+}
+
+
 
 void ArmCompensator::publish_arm_moments()
 {
 	robotic_arm_moments_s moments{};
 
-	moments.xyz[0] = (_Mx/_param_arm_comp_factor.get()) * _param_arm_comp_enable.get();
-	moments.xyz[1] = (_My/_param_arm_comp_factor.get()) * _param_arm_comp_enable.get();
+	moments.xyz[0] = _param_arm_comp_flip_mx.get() * (_Mx/_param_arm_comp_factor.get()) * _param_arm_comp_enable.get();
+	moments.xyz[1] = _param_arm_comp_flip_my.get() * (_My/_param_arm_comp_factor.get()) * _param_arm_comp_enable.get();
 	moments.xyz[2] = 0.f;
 	moments.timestamp = hrt_absolute_time();
 	_robotic_arm_moments_pub.publish(moments);
 }
+
+
+
+void ArmCompensator::update_comp_moments()
+{
+	float l1_sin_theta1 = (_l1 * sinf(_theta1));
+	float l1_cos_theta1 = (_l1 * cosf(_theta1));
+	float theta12 = _theta1 + _theta2;
+
+	_Mx = _m1 * _param_arm_comp_g.get() * l1_sin_theta1 + _m2 * _param_arm_comp_g.get()
+		 * (l1_sin_theta1 + _l2 * sinf(theta12));
+
+	_My = _param_arm_comp_g.get() * (_mb * _lb - _m1 * l1_cos_theta1
+		- _m2 * (l1_cos_theta1 + _l2 * cosf(theta12)));
+}
+
+
+
+void ArmCompensator::run_diagnostics()
+{
+    parameters_updated();
+
+    // Check if parameters are initialized correctly
+    if (_m1 <= 0 || _m2 <= 0 || _l1 <= 0 || _l2 <= 0 || _mb <= 0) {
+        PX4_ERR("Parameter initialization failed.");
+        return;
+    }
+
+    // Perform a sample computation and log the results
+    float test_theta1 = M_PI / 6;
+    float test_theta2 = M_PI / 6;
+
+    float test_Mx = _m1 * _param_arm_comp_g.get() * (_l1 * sinf(test_theta1)) +
+                    _m2 * _param_arm_comp_g.get() * (_l1 * sinf(test_theta1) + _l2 * sinf(test_theta1 + test_theta2));
+
+    float test_My = _param_arm_comp_g.get() * (_mb * _lb - _m1 * _l1 * cosf(test_theta1) -
+                    _m2 * (_l1 * cosf(test_theta1) + _l2 * cosf(test_theta1 + test_theta2)));
+
+//     test_Mx -= 1.013059f;
+//     test_My -= 0.453806f;
+
+    PX4_INFO("Diagnostic Test: Mx = %f, My = %f", (double)test_Mx, (double)test_My);
+
+
+    // Perform additional checks if necessary
+    if (fabs(test_Mx - 1.013059f) < 0.000001f && fabs(test_My - 0.453806f) < 0.000001f) {
+        PX4_INFO("Diagnostic Test Passed.");
+    } else {
+        PX4_ERR("Diagnostic Test Failed.");
+    }
+}
+
 
 
 int ArmCompensator::task_spawn(int argc, char *argv[])
@@ -285,7 +257,12 @@ int ArmCompensator::print_status()
 
 int ArmCompensator::custom_command(int argc, char *argv[])
 {
-	return print_usage("unknown command");
+    if (!strcmp(argv[0], "diagnostics")) {
+        ArmCompensator instance;
+        instance.run_diagnostics();
+        return 0;
+    }
+    return print_usage("unknown command");
 }
 
 int ArmCompensator::print_usage(const char *reason)
@@ -297,12 +274,39 @@ int ArmCompensator::print_usage(const char *reason)
 	PRINT_MODULE_DESCRIPTION(
 		R"DESCR_STR(
 ### Description
-Example of a simple module running out of a work queue.
+The `arm_compensator` module calculates compensatory moments for a robotic arm mounted on a vehicle.
+
+This module reads RC input values to set the angles (_theta1 and _theta2) of the robotic arm joints. Using these angles and predefined arm parameters, it computes the compensatory moments needed to counteract the forces generated by the arm's movement.
+
+Key features:
+- Reads RC input channels for joint angles.
+- Maps RC input values to angles in radians.
+- Calculates compensatory moments (_Mx and _My) based on the arm's configuration and gravity.
+- Publishes the calculated moments to a dedicated topic.
+
+Parameters:
+- `ARM_COMP_M1`, `ARM_COMP_M2`: Masses of the arm segments.
+- `ARM_COMP_L1`, `ARM_COMP_L2`: Lengths of the arm segments.
+- `ARM_COMP_MB`: Mass of the base segment.
+- `ARM_COMP_G`: Gravity constant.
+- `ARM_COMP_CH_THETA1`, `ARM_COMP_CH_THETA2`: RC input channels for the arm angles.
+- `ARM_COMP_FACTOR`, `ARM_COMP_FLIP_MX`, `ARM_COMP_FLIP_MY`: Factors for adjusting the published moments.
+- `ARM_COMP_ENABLE`: Enable/disable the moment compensation.
+
+### Implementation Details
+- Scheduled to run at 200 Hz.
+- Utilizes the work queue configuration `rate_ctrl`.
+- Updates parameters dynamically when they change.
+
+### Usage
+- `start`: Start the module.
+- `diagnostics`: Run diagnostic tests to ensure the module is functioning correctly.
 
 )DESCR_STR");
 
 	PRINT_MODULE_USAGE_NAME("arm_compensator", "template");
 	PRINT_MODULE_USAGE_COMMAND("start");
+	PRINT_MODULE_USAGE_COMMAND("diagnostics");
 	PRINT_MODULE_USAGE_DEFAULT_COMMANDS();
 
 	return 0;

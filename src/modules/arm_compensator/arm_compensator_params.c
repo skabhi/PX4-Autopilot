@@ -44,7 +44,7 @@
  * @max 100
  * @decimal 3
  * @increment 0.01
- * @group Multicopter Rate Control
+ * @group Arm Compensation
  */
 PARAM_DEFINE_FLOAT(ARM_COMP_G, 9.81f);
 
@@ -55,7 +55,7 @@ PARAM_DEFINE_FLOAT(ARM_COMP_G, 9.81f);
  * @max 1000
  * @decimal 3
  * @increment 0.01
- * @group Multicopter Rate Control
+ * @group Arm Compensation
  */
 PARAM_DEFINE_FLOAT(ARM_COMP_M1, 100.0f);
 
@@ -66,7 +66,7 @@ PARAM_DEFINE_FLOAT(ARM_COMP_M1, 100.0f);
  * @max 1000
  * @decimal 3
  * @increment 0.01
- * @group Multicopter Rate Control
+ * @group Arm Compensation
  */
 PARAM_DEFINE_FLOAT(ARM_COMP_M2, 150.0f);
 
@@ -77,7 +77,7 @@ PARAM_DEFINE_FLOAT(ARM_COMP_M2, 150.0f);
  * @max 2000
  * @decimal 3
  * @increment 0.01
- * @group Multicopter Rate Control
+ * @group Arm Compensation
  */
 PARAM_DEFINE_FLOAT(ARM_COMP_L1, 345.5f);
 
@@ -88,7 +88,7 @@ PARAM_DEFINE_FLOAT(ARM_COMP_L1, 345.5f);
  * @max 2000
  * @decimal 3
  * @increment 0.01
- * @group Multicopter Rate Control
+ * @group Arm Compensation
  */
 PARAM_DEFINE_FLOAT(ARM_COMP_L2, 462.5f);
 
@@ -99,7 +99,7 @@ PARAM_DEFINE_FLOAT(ARM_COMP_L2, 462.5f);
  * @max 100000
  * @decimal 3
  * @increment 0.01
- * @group Multicopter Rate Control
+ * @group Arm Compensation
  */
 PARAM_DEFINE_FLOAT(ARM_COMP_MB, 1200.0f);
 
@@ -111,7 +111,7 @@ PARAM_DEFINE_FLOAT(ARM_COMP_MB, 1200.0f);
  * @max 100000
  * @decimal 3
  * @increment 0.01
- * @group Multicopter Rate Control
+ * @group Arm Compensation
  */
 PARAM_DEFINE_FLOAT(ARM_COMP_FACTOR, 10.0f);
 
@@ -121,7 +121,7 @@ PARAM_DEFINE_FLOAT(ARM_COMP_FACTOR, 10.0f);
  *
  * @min -1
  * @max 1
- * @group Multicopter Rate Control
+ * @group Arm Compensation
  */
 PARAM_DEFINE_INT32(ARM_COMP_FLIP_MX, 1);
 
@@ -130,15 +130,35 @@ PARAM_DEFINE_INT32(ARM_COMP_FLIP_MX, 1);
  *
  * @min -1
  * @max 1
- * @group Multicopter Rate Control
+ * @group Arm Compensation
  */
 PARAM_DEFINE_INT32(ARM_COMP_FLIP_MY, 1);
+
+
+/**
+ * RC input channel number for theta1 potentiometer
+ *
+ * @min 0
+ * @max 20
+ * @group Arm Compensation
+ */
+PARAM_DEFINE_INT32(ARM_COMP_CH_T1, 4);
+
+
+/**
+ * RC input channel number for theta2 potentiometer
+ *
+ * @min 0
+ * @max 20
+ * @group Arm Compensation
+ */
+PARAM_DEFINE_INT32(ARM_COMP_CH_T2, 5);
 
 
 /**
  * Enable robotic arm moment compensation
  *
  * @boolean
- * @group Multicopter Rate Control
+ * @group Arm Compensation
  */
 PARAM_DEFINE_INT32(ARM_COMP_ENABLE, 0);

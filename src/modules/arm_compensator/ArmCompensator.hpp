@@ -80,9 +80,18 @@ public:
 private:
 	void Run() override;
 
+	void update_rc_inputs_and_thetas();
+
 	void update_comp_moments();
 
 	void publish_arm_moments();
+
+	void run_diagnostics();
+
+	void parameters_updated();
+
+
+	float mapValue(int x, int in_min, int in_max, float out_min, float out_max);
 
 	// Publications
 	uORB::Publication<orb_test_s> _orb_test_pub{ORB_ID(orb_test)};
@@ -110,6 +119,9 @@ private:
 	float _Mx{0.0f}, _My{0.0f};
 	float _theta1{0.0f}, _theta2{0.0f};
 
+	// RC inputs
+	int16_t _input_rc_theta1{1500}, _input_rc_theta2{1500};
+
 
 	// Performance (perf) counters
 	perf_counter_t	_loop_perf{perf_alloc(PC_ELAPSED, MODULE_NAME": cycle")};
@@ -129,7 +141,9 @@ private:
 		(ParamFloat<px4::params::ARM_COMP_G>) 			_param_arm_comp_g,
 		(ParamFloat<px4::params::ARM_COMP_FACTOR>) 		_param_arm_comp_factor,
 		(ParamInt<px4::params::ARM_COMP_FLIP_MX>) 		_param_arm_comp_flip_mx,
-		(ParamInt<px4::params::ARM_COMP_FLIP_MY>) 		_param_arm_comp_flip_my
+		(ParamInt<px4::params::ARM_COMP_FLIP_MY>) 		_param_arm_comp_flip_my,
+		(ParamInt<px4::params::ARM_COMP_CH_T1>) 		_param_arm_comp_ch_theta1,
+		(ParamInt<px4::params::ARM_COMP_CH_T2>) 		_param_arm_comp_ch_theta2
 	)
 
 
