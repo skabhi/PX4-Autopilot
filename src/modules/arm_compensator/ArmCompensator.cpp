@@ -57,7 +57,7 @@ bool ArmCompensator::init()
 	// }
 
 	// alternatively, Run on fixed interval
-	ScheduleOnInterval(2000_us); // 2000 us interval, 200 Hz rate
+	ScheduleOnInterval(2000_us); // 2000 us interval, 500 Hz rate max
 	// ScheduleNow();
 
 	parameters_updated();
@@ -294,7 +294,7 @@ Parameters:
 - `ARM_COMP_ENABLE`: Enable/disable the moment compensation.
 
 ### Implementation Details
-- Scheduled to run at 200 Hz.
+- Scheduled to run at 500 Hz max.
 - Utilizes the work queue configuration `rate_ctrl`.
 - Updates parameters dynamically when they change.
 
