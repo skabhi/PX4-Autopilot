@@ -150,9 +150,7 @@ private:
 	float _tas_innov_threshold{1.0}; ///< innovation error threshold for triggering innovation check failure
 	float _tas_innov_integ_threshold{-1.0}; ///< integrator innovation error threshold for triggering innovation check failure
 	uint64_t	_time_last_aspd_innov_check{0};	///< time airspeed innovation was last checked (uSec)
-	uint64_t	_time_last_tas_pass{0};		///< last time innovation checks passed
 	float		_aspd_innov_integ_state{0.0f};	///< integral of excess normalised airspeed innovation (sec)
-	static constexpr uint64_t TAS_INNOV_FAIL_DELAY{1_s};	///< time required for innovation levels to pass or fail (usec)
 	uint64_t	_time_wind_estimator_initialized{0};		///< time last time wind estimator was initialized (uSec)
 
 	// states of load factor check
@@ -162,8 +160,8 @@ private:
 
 	// states of airspeed valid declaration
 	bool _airspeed_valid{true}; ///< airspeed valid (pitot or groundspeed-windspeed)
-	int _checks_fail_delay{3}; ///< delay for airspeed invalid declaration after single check failure (Sec)
-	int _checks_clear_delay{-1}; ///< delay for airspeed valid declaration after all checks passed again (Sec)
+	float _checks_fail_delay{2.f}; ///< delay for airspeed invalid declaration after single check failure (Sec)
+	float _checks_clear_delay{-1.f}; ///< delay for airspeed valid declaration after all checks passed again (Sec)
 	uint64_t	_time_checks_passed{0};	///< time the checks have last passed (uSec)
 	uint64_t	_time_checks_failed{0};	///< time the checks have last not passed (uSec)
 
