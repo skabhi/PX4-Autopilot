@@ -62,12 +62,12 @@ bool ArmCompensator::init()
 
 	parameters_updated();
 
-	int i = 100;
-	while (i > 0)
-	{
-		PX4_INFO("lb: %f", (double) _lb);
-		i--;
-	}
+	// int i = 100;
+	// while (i > 0)
+	// {
+	// 	PX4_INFO("lb: %f", (double) _lb);
+	// 	i--;
+	// }
 
 	// run_diagnostics();
 
