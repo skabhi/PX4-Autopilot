@@ -214,13 +214,25 @@ void ArmCompensator::run_diagnostics()
 
     PX4_INFO("Diagnostic Test: Mx = %f, My = %f", (double)test_Mx, (double)test_My);
 
-
+#if defined(__PX4_POSIX)
+    // Code specific to SITL
+    PX4_INFO("Running in SITL");
     // Perform additional checks if necessary
     if (fabs(test_Mx - 1.013059f) < 0.000001f && fabs(test_My - 0.453806f) < 0.000001f) {
         PX4_INFO("Diagnostic Test Passed.");
     } else {
         PX4_ERR("Diagnostic Test Failed.");
     }
+#elif defined(__PX4_NUTTX)
+    // Code specific to NuttX hardware
+    PX4_INFO("Running on NuttX hardware");
+    // Perform additional checks if necessary
+    if (fabs(test_Mx - 1.013059f) < (double)0.000001f && fabs(test_My - 0.453806f) < (double)0.000001f) {
+        PX4_INFO("Diagnostic Test Passed.");
+    } else {
+        PX4_ERR("Diagnostic Test Failed.");
+    }
+#endif
 }
 
 
