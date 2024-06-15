@@ -49,7 +49,7 @@
 
 /* LEDs */
 // LED1 - GPIO 25 - Green
-#define GPIO_LED1       PX4_MAKE_GPIO_OUTPUT_CLEAR(25) // Take a look at rpi_common micro_hal.h
+#define GPIO_LED1       PX4_MAKE_GPIO_OUTPUT_CLEAR(29) // Take a look at rpi_common micro_hal.h
 #define GPIO_LED_BLUE   GPIO_LED1
 
 #define BOARD_OVERLOAD_LED     LED_BLUE

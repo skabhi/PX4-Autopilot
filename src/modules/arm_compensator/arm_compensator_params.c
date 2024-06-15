@@ -107,8 +107,8 @@ PARAM_DEFINE_FLOAT(ARM_COMP_MB, 1200.0f);
 /**
  * Moment divider
  *
- * @min 0.01
- * @max 100000
+ * @min 4.00
+ * @max 10000
  * @decimal 3
  * @increment 0.01
  * @group Arm Compensation

@@ -88,6 +88,8 @@ private:
 
 	void run_diagnostics();
 
+	void run_rc_input_diagnostics();
+
 	void parameters_updated();
 
 

@@ -237,6 +237,26 @@ void ArmCompensator::run_diagnostics()
 
 
 
+void ArmCompensator::run_rc_input_diagnostics()
+{
+	PX4_INFO("Running RC Input Diagnostics");
+
+	// Check if RC inputs are being read correctly
+	if (_input_rc_sub.updated()) {
+		input_rc_s input;
+		if (_input_rc_sub.copy(&input)) {
+			PX4_INFO("RC Input Channel %d (theta1): %d", _param_arm_comp_ch_theta1.get(), input.values[_param_arm_comp_ch_theta1.get()]);
+			PX4_INFO("RC Input Channel %d (theta2): %d", _param_arm_comp_ch_theta2.get(), input.values[_param_arm_comp_ch_theta2.get()]);
+		} else {
+			PX4_ERR("Failed to copy RC input values");
+		}
+	} else {
+		PX4_ERR("No RC input update available");
+	}
+}
+
+
+
 int ArmCompensator::task_spawn(int argc, char *argv[])
 {
 	ArmCompensator *instance = new ArmCompensator();
@@ -270,10 +290,15 @@ int ArmCompensator::print_status()
 int ArmCompensator::custom_command(int argc, char *argv[])
 {
     if (!strcmp(argv[0], "diagnostics")) {
-        ArmCompensator instance;
-        instance.run_diagnostics();
-        return 0;
-    }
+		ArmCompensator instance;
+		instance.run_diagnostics();
+		return 0;
+	} else if (!strcmp(argv[0], "rc_test")) {
+		ArmCompensator instance;
+		instance.run_rc_input_diagnostics();
+		return 0;
+	}
+
     return print_usage("unknown command");
 }
 
@@ -313,12 +338,14 @@ Parameters:
 ### Usage
 - `start`: Start the module.
 - `diagnostics`: Run diagnostic tests to ensure the module is functioning correctly.
+- `rc_test`: Run diagnostic tests to ensure RC inputs are being read correctly.
 
 )DESCR_STR");
 
 	PRINT_MODULE_USAGE_NAME("arm_compensator", "template");
 	PRINT_MODULE_USAGE_COMMAND("start");
 	PRINT_MODULE_USAGE_COMMAND("diagnostics");
+	PRINT_MODULE_USAGE_COMMAND("rc_test");
 	PRINT_MODULE_USAGE_DEFAULT_COMMANDS();
 
 	return 0;
