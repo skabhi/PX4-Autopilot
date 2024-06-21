@@ -245,8 +245,8 @@ void ArmCompensator::run_rc_input_diagnostics()
 	if (_input_rc_sub.updated()) {
 		input_rc_s input;
 		if (_input_rc_sub.copy(&input)) {
-			PX4_INFO("RC Input Channel %d (theta1): %d", _param_arm_comp_ch_theta1.get(), input.values[_param_arm_comp_ch_theta1.get()]);
-			PX4_INFO("RC Input Channel %d (theta2): %d", _param_arm_comp_ch_theta2.get(), input.values[_param_arm_comp_ch_theta2.get()]);
+			PX4_INFO("RC Input Channel %d (theta1): %d", (int)_param_arm_comp_ch_theta1.get(), input.values[_param_arm_comp_ch_theta1.get()]);
+			PX4_INFO("RC Input Channel %d (theta2): %d", (int)_param_arm_comp_ch_theta2.get(), input.values[_param_arm_comp_ch_theta2.get()]);
 		} else {
 			PX4_ERR("Failed to copy RC input values");
 		}
